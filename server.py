@@ -1,21 +1,19 @@
 """
 MCP Server for Danmarks Statistik's Statistikbank API.
-Remote deployment version (Streamable HTTP + SSE transport).
-
-This server exposes Danmarks Statistik's API endpoints as MCP tools,
-designed to be deployed as a remote service for Claude.ai web integration.
-
-Run locally:  python server.py
-Run via Docker: see Dockerfile / docker-compose.yml
+Remote deployment version — runs as an HTTP service for Claude.ai web integration.
 """
 
 import os
 import logging
 import sys
-from typing import Any, Literal, Optional, Union, Dict
+from typing import Literal, Optional, Union
 
-from fastmcp import FastMCP
 import requests
+import uvicorn
+from fastmcp import FastMCP
+from starlette.applications import Starlette
+from starlette.routing import Mount, Route
+from starlette.responses import JSONResponse
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -28,21 +26,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Configuration via environment variables
+# Configuration
 # ---------------------------------------------------------------------------
 HOST = os.getenv("MCP_HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", os.getenv("MCP_PORT", "8000")))  # $PORT is auto-set by Railway/Render/Fly.io
-TRANSPORT = os.getenv("MCP_TRANSPORT", "streamable-http")  # "streamable-http" or "sse"
+PORT = int(os.getenv("PORT", os.getenv("MCP_PORT", "8000")))
 
 # ---------------------------------------------------------------------------
-# Initialize FastMCP server
+# FastMCP server
 # ---------------------------------------------------------------------------
 mcp = FastMCP("Danmarks Statistik API")
 
-# Base URL for DST API
 BASE_URL = "https://api.statbank.dk/v1"
 
-# Valid data formats
 DataFormat = Literal[
     "JSONSTAT", "JSON", "CSV", "XLSX", "BULK", "PX", "TSV", "HTML5", "HTML5InclNotes"
 ]
@@ -176,11 +171,28 @@ def get_data(
 
 
 # ---------------------------------------------------------------------------
+# Health check endpoint (responds on GET /)
+# ---------------------------------------------------------------------------
+async def health(request):
+    return JSONResponse({"status": "ok", "service": "Danmarks Statistik MCP Server"})
+
+
+# ---------------------------------------------------------------------------
+# Build the ASGI app: mount MCP at /mcp, health at /
+# ---------------------------------------------------------------------------
+mcp_app = mcp.http_app(path="/mcp", stateless_http=True)
+
+app = Starlette(
+    routes=[
+        Route("/", health),
+        Route("/health", health),
+        Mount("/", app=mcp_app),
+    ],
+)
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    logger.info(
-        "Starting Danmarks Statistik MCP Server — transport=%s, host=%s, port=%s",
-        TRANSPORT, HOST, PORT,
-    )
-    mcp.run(transport=TRANSPORT, host=HOST, port=PORT)
+    logger.info("Starting Danmarks Statistik MCP Server on %s:%s", HOST, PORT)
+    uvicorn.run(app, host=HOST, port=PORT)
