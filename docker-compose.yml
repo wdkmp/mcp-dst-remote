@@ -7,4 +7,5 @@ services:
       - MCP_HOST=0.0.0.0
       - MCP_PORT=8000
       - MCP_TRANSPORT=streamable-http
+      - FASTMCP_STATELESS_HTTP=true
     restart: unless-stopped

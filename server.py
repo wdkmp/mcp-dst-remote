@@ -37,7 +37,7 @@ TRANSPORT = os.getenv("MCP_TRANSPORT", "streamable-http")  # "streamable-http" o
 # ---------------------------------------------------------------------------
 # Initialize FastMCP server
 # ---------------------------------------------------------------------------
-mcp = FastMCP("Danmarks Statistik API", stateless_http=True)
+mcp = FastMCP("Danmarks Statistik API")
 
 # Base URL for DST API
 BASE_URL = "https://api.statbank.dk/v1"
