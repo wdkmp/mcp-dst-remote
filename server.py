@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Configuration via environment variables
 # ---------------------------------------------------------------------------
 HOST = os.getenv("MCP_HOST", "0.0.0.0")
-PORT = int(os.getenv("MCP_PORT", "8000"))
+PORT = int(os.getenv("PORT", os.getenv("MCP_PORT", "8000")))  # $PORT is auto-set by Railway/Render/Fly.io
 TRANSPORT = os.getenv("MCP_TRANSPORT", "streamable-http")  # "streamable-http" or "sse"
 
 # ---------------------------------------------------------------------------

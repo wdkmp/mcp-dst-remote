@@ -45,23 +45,16 @@ curl -X POST http://localhost:8000/mcp \
 The server needs to be publicly accessible via HTTPS. Choose one of:
 
 ### Option 1: Railway (easiest)
-1. Push this folder to a GitHub repo
-2. Go to [railway.app](https://railway.app), create new project → Deploy from GitHub repo
-3. Railway auto-detects the Dockerfile
-4. Set environment variable `MCP_PORT` to the port Railway assigns (usually via `$PORT`)
-5. You get a public URL like `https://mcp-dst-xxxxx.up.railway.app`
-
-**Note for Railway:** Change the CMD in Dockerfile to respect Railway's PORT:
-```dockerfile
-CMD ["sh", "-c", "MCP_PORT=$PORT python server.py"]
-```
+1. Go to [railway.app](https://railway.app), create new project → Deploy from GitHub repo (`wdkmp/mcp-dst-remote`)
+2. Railway auto-detects the Dockerfile — no config needed
+3. The server automatically reads Railway's `$PORT` variable, so it just works
+4. You get a public URL like `https://mcp-dst-xxxxx.up.railway.app`
 
 ### Option 2: Render
-1. Push to GitHub
-2. Go to [render.com](https://render.com), create new Web Service → connect repo
-3. Render auto-detects Docker
-4. Set environment: `MCP_PORT=10000` (Render's default)
-5. You get a URL like `https://mcp-dst.onrender.com`
+1. Go to [render.com](https://render.com), create new Web Service → connect repo (`wdkmp/mcp-dst-remote`)
+2. Render auto-detects Docker — no config needed
+3. The server automatically reads Render's `$PORT` variable, so it just works
+4. You get a URL like `https://mcp-dst.onrender.com`
 
 ### Option 3: Fly.io
 ```bash
@@ -97,8 +90,8 @@ Once deployed and you have a public HTTPS URL:
 
 | Variable        | Default             | Description                           |
 |-----------------|---------------------|---------------------------------------|
+| `PORT`          | `8000`              | Port to listen on (auto-set by Railway/Render/Fly.io) |
 | `MCP_HOST`      | `0.0.0.0`           | Bind address                          |
-| `MCP_PORT`      | `8000`              | Port to listen on                     |
 | `MCP_TRANSPORT` | `streamable-http`   | Transport: `streamable-http` or `sse` |
 
 ---
