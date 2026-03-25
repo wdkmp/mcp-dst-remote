@@ -1,0 +1,10 @@
+services:
+  mcp-dst:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - MCP_TRANSPORT=streamable-http
+    restart: unless-stopped
