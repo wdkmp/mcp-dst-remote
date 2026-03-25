@@ -9,11 +9,7 @@ import sys
 from typing import Literal, Optional, Union
 
 import requests
-import uvicorn
 from fastmcp import FastMCP
-from starlette.applications import Starlette
-from starlette.routing import Mount, Route
-from starlette.responses import JSONResponse
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -171,28 +167,8 @@ def get_data(
 
 
 # ---------------------------------------------------------------------------
-# Health check endpoint (responds on GET /)
-# ---------------------------------------------------------------------------
-async def health(request):
-    return JSONResponse({"status": "ok", "service": "Danmarks Statistik MCP Server"})
-
-
-# ---------------------------------------------------------------------------
-# Build the ASGI app: mount MCP at /mcp, health at /
-# ---------------------------------------------------------------------------
-mcp_app = mcp.http_app(path="/mcp", stateless_http=True)
-
-app = Starlette(
-    routes=[
-        Route("/", health),
-        Route("/health", health),
-        Mount("/", app=mcp_app),
-    ],
-)
-
-# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     logger.info("Starting Danmarks Statistik MCP Server on %s:%s", HOST, PORT)
-    uvicorn.run(app, host=HOST, port=PORT)
+    mcp.run(transport="http", host=HOST, port=PORT)
